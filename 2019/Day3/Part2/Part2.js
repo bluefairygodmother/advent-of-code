@@ -5,7 +5,8 @@ const input = fs.readFileSync('../input.txt').toString();
 const wires = input.split('\n');
 const wire1 = wires[0].split(',');
 const wire2 = wires[1].split(',');
-let grid = [[0,0]];
+let wire1path = ['(0, 0)'];
+let wire2path = ['(0, 0)'];
 let currentX = 0;
 let currentY = 0;
 
@@ -32,9 +33,7 @@ for (let i = 0; i < wire1.length; i++) {
     let distance = parseInt(path.slice(1, path.length));
     while (distance > 0) {
         findDirection(direction);
-        if (!grid.includes([currentX, currentY])) {
-            grid.push([currentX, currentY]);
-        }
+        wire1path.push(`(${currentX}, ${currentY})`);
         distance--;
     }
 }
@@ -42,12 +41,8 @@ for (let i = 0; i < wire1.length; i++) {
 currentX = 0;
 currentY = 0;
 
-let gridStrings = [];
-for (let x = 0; x < grid.length; x++) {
-    gridStrings[x] = JSON.stringify(grid[x]);
-}
 
-let manhattanDistance = null;
+let combinedSteps = null;
 for (let j = 0; j < wire2.length; j++) {
     let path = wire2[j];
     let direction = path.charAt(0);
@@ -55,19 +50,29 @@ for (let j = 0; j < wire2.length; j++) {
     while (distance > 0) {
         findDirection(direction);
 
-        let pointA = JSON.stringify([currentX, currentY]);
-        let intersection = gridStrings.some(function(pointB){
+        let pointA = `(${currentX}, ${currentY})`;
+        wire2path.push(pointA);        
+
+        let intersection = wire1path.some(function(pointB){
           return pointA === pointB;
         });
 
         if (intersection) {
-            let currentManhattanDistance = Math.abs(currentX) + Math.abs(currentY);
-            if (!manhattanDistance || manhattanDistance > currentManhattanDistance) {
-                manhattanDistance = currentManhattanDistance;
+            let wire1FirstPoint = wire1path.findIndex(function(el) {
+                return el == pointA;
+            });
+            let wire2FirstPoint = wire2path.findIndex(function(el) {
+                return el == pointA;
+            });
+
+            let currentCombinedSteps = Math.abs(wire1FirstPoint) + Math.abs(wire2FirstPoint);
+            
+            if (!combinedSteps || combinedSteps > currentCombinedSteps) {
+                combinedSteps = currentCombinedSteps;
             }
         }
         distance--;
     }
 }
 
-console.log(manhattanDistance);
+console.log(combinedSteps);
